@@ -25,5 +25,17 @@ class MyApp extends  StatelessWidget {
   }
 }
 
+class CameraScreen extends StatelessWidget {
 
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Tkae Photos'),
+      ),
+      body: Center(
+        child: Text('Camera screen - we will add camera here'),
+      ),
+    );
+  }
+}
 
