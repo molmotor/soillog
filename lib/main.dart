@@ -17,7 +17,10 @@ class MyApp extends  StatelessWidget {
         body: Center(
           child: ElevatedButton(
             onPressed: () {
-              print('Button pressed');
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CameraScreen()),
+              );
             },
             child: Text('Start New Log')
           )))
@@ -38,4 +41,7 @@ class CameraScreen extends StatelessWidget {
     );
   }
 }
+
+
+
 
