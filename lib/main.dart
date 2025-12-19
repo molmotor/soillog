@@ -11,19 +11,29 @@ class MyApp extends  StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home : Scaffold(
-        appBar: AppBar(
-          title: Text('SoilLog'),
-          ),
-        body: Center(
-          child: ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => CameraScreen()),
-              );
-            },
-            child: Text('Start New Log')
-          )))
+        home: HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('SoilLog'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => CameraScreen()),
+            );
+          },
+          child: Text('Start New Log'),
+        ),
+      ),
     );
   }
 }
