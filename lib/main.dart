@@ -2,23 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'dart:async';
 
-
-void main() {
-  runApp(MyApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final cameras = await availableCameras();
+  runApp(MyApp(cameras: cameras));
 }
 
-class MyApp extends  StatelessWidget {
-  const MyApp({super.key});
+class MyApp extends StatelessWidget {
+  final List<CameraDescription> cameras;
+  const MyApp({super.key, required this.cameras});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        home: HomeScreen(),
+      home: HomeScreen(cameras: cameras),
     );
   }
 }
 
 class HomeScreen extends StatelessWidget {
+  final List<CameraDescription> cameras;
+  const HomeScreen({required this.cameras});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,7 +35,9 @@ class HomeScreen extends StatelessWidget {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => CameraScreen()),
+              MaterialPageRoute(
+                builder: (context) => CameraScreen(cameras: cameras),
+              ),
             );
           },
           child: Text('Start New Log'),
@@ -40,20 +47,25 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class CameraScreen extends StatelessWidget {
+class CameraScreen extends StatefulWidget {
+  final List<CameraDescription> cameras;
+  const CameraScreen({required this.cameras});
 
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Take Photos'),
-      ),
-      body: Center(
-        child: Text('Camera screen - we will add camera here'),
-      ),
-    );
-  }
+  @override
+  State<CameraScreen> createState() => _CameraScreenState();
 }
 
+class _CameraScreenState extends State<CameraScreen> {
+  late CameraController controller;
+  late Future<void> _initializeControllerFuture;
+  List<String> capturedImages = [];
 
-
-
+  @override
+  void initState() {
+    super.initState();
+    controller = CameraController(
+      widget.cameras[0],
+      ResolutionPreset.high,
+    );
+    _initializeControllerFuture = controller.initialize();
+  }
