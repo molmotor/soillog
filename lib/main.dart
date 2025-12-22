@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'dart:async';
 import 'dart:io';
-import 'package:flutter_painter/flutter_painter.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -101,7 +100,6 @@ class _CameraScreenState extends State<CameraScreen> {
       await _initializeControllerFuture;
       final image = await controller.takePicture();
       
-      // Navigate to editor
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -178,19 +176,8 @@ class ImageEditorScreen extends StatefulWidget {
 }
 
 class _ImageEditorScreenState extends State<ImageEditorScreen> {
-  late PainterController painterController;
-
-  @override
-  void initState() {
-    super.initState();
-    painterController = PainterController();
-  }
-
-  @override
-  void dispose() {
-    painterController.dispose();
-    super.dispose();
-  }
+  List<Offset?> points = [];
+  Color selectedColor = Colors.red;
 
   @override
   Widget build(BuildContext context) {
@@ -217,8 +204,21 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
                   File(widget.imagePath),
                   fit: BoxFit.contain,
                 ),
-                FlutterPainter(
-                  controller: painterController,
+                GestureDetector(
+                  onPanUpdate: (details) {
+                    setState(() {
+                      RenderBox box = context.findRenderObject() as RenderBox;
+                      Offset point = box.globalToLocal(details.globalPosition);
+                      points.add(point);
+                    });
+                  },
+                  onPanEnd: (details) {
+                    points.add(null);
+                  },
+                  child: CustomPaint(
+                    painter: DrawingPainter(points, selectedColor),
+                    size: Size.infinite,
+                  ),
                 ),
               ],
             ),
@@ -230,23 +230,37 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 IconButton(
-                  icon: Icon(Icons.edit, color: Color(0xFF8B4513)),
+                  icon: Icon(Icons.clear, color: Color(0xFF8B4513)),
                   onPressed: () {
-                    painterController.freeStyleMode = FreeStyleMode.draw;
+                    setState(() {
+                      points.clear();
+                    });
                   },
+                  tooltip: 'Clear',
                 ),
-                IconButton(
-                  icon: Icon(Icons.text_fields, color: Color(0xFF8B4513)),
-                  onPressed: () {
-                    painterController.addText();
-                  },
-                ),
-                IconButton(
-                  icon: Icon(Icons.undo, color: Color(0xFF8B4513)),
-                  onPressed: () {
-                    painterController.undo();
-                  },
-                ),
+                ...[ Colors.red, Colors.blue, Colors.green, Colors.black, Colors.white]
+                    .map((color) => GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              selectedColor = color;
+                            });
+                          },
+                          child: Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              color: color,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: selectedColor == color
+                                    ? Colors.black
+                                    : Colors.transparent,
+                                width: 3,
+                              ),
+                            ),
+                          ),
+                        ))
+                    .toList(),
               ],
             ),
           ),
@@ -254,4 +268,28 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
       ),
     );
   }
+}
+
+class DrawingPainter extends CustomPainter {
+  final List<Offset?> points;
+  final Color color;
+
+  DrawingPainter(this.points, this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    Paint paint = Paint()
+      ..color = color
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 5.0;
+
+    for (int i = 0; i < points.length - 1; i++) {
+      if (points[i] != null && points[i + 1] != null) {
+        canvas.drawLine(points[i]!, points[i + 1]!, paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(DrawingPainter oldDelegate) => true;
 }
