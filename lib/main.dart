@@ -11,7 +11,7 @@ Future<void> main() async {
 
 class MyApp extends StatelessWidget {
   final List<CameraDescription> cameras;
-  const MyApp({super.key, required this.cameras});
+  const MyApp({super.key, this.cameras = const []});
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
 
 class HomeScreen extends StatelessWidget {
   final List<CameraDescription> cameras;
-  const HomeScreen({required this.cameras});
+  const HomeScreen({super.key, required this.cameras});
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +68,7 @@ class HomeScreen extends StatelessWidget {
 
 class CameraScreen extends StatefulWidget {
   final List<CameraDescription> cameras;
-  const CameraScreen({required this.cameras});
+  const CameraScreen({super.key, required this.cameras});
 
   @override
   State<CameraScreen> createState() => _CameraScreenState();
@@ -98,8 +98,10 @@ class _CameraScreenState extends State<CameraScreen> {
   Future<void> takePicture() async {
     try {
       await _initializeControllerFuture;
+      if (!mounted) return;
       final image = await controller.takePicture();
-      
+      if (!mounted) return;
+
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -114,7 +116,7 @@ class _CameraScreenState extends State<CameraScreen> {
         ),
       );
     } catch (e) {
-      print('Error: $e');
+      debugPrint('Error: $e');
     }
   }
 
@@ -153,7 +155,7 @@ class _CameraScreenState extends State<CameraScreen> {
             )
           : FloatingActionButton(
               onPressed: () {
-                print('All 4 photos taken!');
+                debugPrint('All 4 photos taken!');
               },
               backgroundColor: Color(0xFF8B4513),
               child: Icon(Icons.arrow_forward, color: Colors.white),
@@ -167,6 +169,7 @@ class ImageEditorScreen extends StatefulWidget {
   final Function(String) onSave;
 
   const ImageEditorScreen({
+    super.key,
     required this.imagePath,
     required this.onSave,
   });
@@ -259,8 +262,8 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
                               ),
                             ),
                           ),
-                        ))
-                    .toList(),
+                        )),
+
               ],
             ),
           ),
