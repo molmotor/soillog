@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'dart:async';
+import 'dart:io';
+import 'package:flutter_painter/flutter_painter.dart';
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -143,6 +146,100 @@ class _CameraScreenState extends State<CameraScreen> {
               },
               child: Icon(Icons.arrow_forward),
             ),
+    );
+  }
+}
+
+
+
+class ImageEditorScreen extends StatefulWidget {
+  final String imagePath;
+  final Function(String) onSave;
+
+  const ImageEditorScreen({
+    required this.imagePath,
+    required this.onSave,
+  });
+
+  @override
+  State<ImageEditorScreen> createState() => _ImageEditorScreenState();
+}
+
+class _ImageEditorScreenState extends State<ImageEditorScreen> {
+  late PainterController painterController;
+
+  @override
+  void initState() {
+    super.initState();
+    painterController = PainterController();
+  }
+
+  @override
+  void dispose() {
+    painterController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Edit Photo'),
+        backgroundColor: Color(0xFF8B4513),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.check),
+            onPressed: () {
+              widget.onSave(widget.imagePath);
+              Navigator.pop(context);
+            },
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: Stack(
+              children: [
+                Image.file(
+                  File(widget.imagePath),
+                  fit: BoxFit.contain,
+                ),
+                FlutterPainter(
+                  controller: painterController,
+                ),
+              ],
+            ),
+          ),
+          Container(
+            color: Colors.grey[200],
+            padding: EdgeInsets.all(8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.edit, color: Color(0xFF8B4513)),
+                  onPressed: () {
+                    painterController.freeStyleMode = FreeStyleMode.draw;
+                  },
+                ),
+                IconButton(
+                  icon: Icon(Icons.text_fields, color: Color(0xFF8B4513)),
+                  onPressed: () {
+                    painterController.addText();
+                  },
+                ),
+                IconButton(
+                  icon: Icon(Icons.undo, color: Color(0xFF8B4513)),
+                  onPressed: () {
+                    painterController.undo();
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
