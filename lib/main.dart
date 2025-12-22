@@ -4,7 +4,6 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter_painter/flutter_painter.dart';
 
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final cameras = await availableCameras();
@@ -40,7 +39,7 @@ class HomeScreen extends StatelessWidget {
             color: Colors.white,
           ),
         ),
-        backgroundColor: Color(0xFF8B4513), // Dirt brown color
+        backgroundColor: Color(0xFF8B4513),
         elevation: 0,
       ),
       body: Center(
@@ -101,9 +100,21 @@ class _CameraScreenState extends State<CameraScreen> {
     try {
       await _initializeControllerFuture;
       final image = await controller.takePicture();
-      setState(() {
-        capturedImages.add(image.path);
-      });
+      
+      // Navigate to editor
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ImageEditorScreen(
+            imagePath: image.path,
+            onSave: (editedPath) {
+              setState(() {
+                capturedImages.add(editedPath);
+              });
+            },
+          ),
+        ),
+      );
     } catch (e) {
       print('Error: $e');
     }
@@ -114,6 +125,7 @@ class _CameraScreenState extends State<CameraScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Take Photos (${capturedImages.length}/4)'),
+        backgroundColor: Color(0xFF8B4513),
       ),
       body: FutureBuilder<void>(
         future: _initializeControllerFuture,
@@ -138,19 +150,19 @@ class _CameraScreenState extends State<CameraScreen> {
       floatingActionButton: capturedImages.length < 4
           ? FloatingActionButton(
               onPressed: takePicture,
-              child: Icon(Icons.camera),
+              backgroundColor: Color(0xFF8B4513),
+              child: Icon(Icons.camera, color: Colors.white),
             )
           : FloatingActionButton(
               onPressed: () {
                 print('All 4 photos taken!');
               },
-              child: Icon(Icons.arrow_forward),
+              backgroundColor: Color(0xFF8B4513),
+              child: Icon(Icons.arrow_forward, color: Colors.white),
             ),
     );
   }
 }
-
-
 
 class ImageEditorScreen extends StatefulWidget {
   final String imagePath;
@@ -188,7 +200,7 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
         backgroundColor: Color(0xFF8B4513),
         actions: [
           IconButton(
-            icon: Icon(Icons.check),
+            icon: Icon(Icons.check, color: Colors.white),
             onPressed: () {
               widget.onSave(widget.imagePath);
               Navigator.pop(context);
